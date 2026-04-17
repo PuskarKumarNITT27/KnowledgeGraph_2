@@ -1,0 +1,25 @@
+# ── Core UI ───────────────────────────────────────────────────────────────────
+streamlit>=1.35.0
+
+# ── OCR ───────────────────────────────────────────────────────────────────────
+# Also requires Tesseract binary: https://github.com/tesseract-ocr/tesseract
+pytesseract>=0.3.10
+Pillow>=10.0.0
+
+# ── PDF ───────────────────────────────────────────────────────────────────────
+pymupdf>=1.24.0          # provides the `fitz` module
+
+# ── Neo4j ─────────────────────────────────────────────────────────────────────
+neo4j>=5.19.0
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+python-dotenv>=1.0.0     # optional — loads .env for local development
+pyvis
+google-genai>=1.0.0
+
+ 
+# ── CSV scraping ──────────────────────────────────────────────────────────────
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+pandas>=2.0.0
+tqdm>=4.66.0
