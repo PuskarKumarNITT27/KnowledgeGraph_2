@@ -8,8 +8,6 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?style=for-the-badge&logo=streamlit)](https://streamlit.io/)
 [![Neo4j](https://img.shields.io/badge/Neo4j-Graph_DB-008CC1?style=for-the-badge&logo=neo4j)](https://neo4j.com/)
 [![Gemini](https://img.shields.io/badge/Google-Gemini_LLM-4285F4?style=for-the-badge&logo=google)](https://deepmind.google/technologies/gemini/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
-
 </div>
 
 ---
