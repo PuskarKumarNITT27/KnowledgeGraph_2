@@ -208,10 +208,6 @@ def _render_template_picker():
 
 @st.dialog("Fill Template Parameters")
 def _open_template_dialog():
-    """
-    Dialog box — renders one input field per placeholder.
-    On OK: formats the query, injects into prefill_query, closes dialog.
-    """
     tmpl = st.session_state.get("_dialog_template")
     if not tmpl:
         st.warning("No template selected.")
@@ -221,50 +217,85 @@ def _open_template_dialog():
     st.caption(tmpl["description"])
     st.markdown("---")
 
+    # ── Preview ─────────────────────────────
     with st.expander("👁 Preview raw template"):
         st.code(tmpl["query"], language="cypher")
 
     st.markdown("**Fill in the placeholders:**")
 
     param_values = {}
+
+    # ── Input fields ────────────────────────
     for param in tmpl.get("params", []):
+        key = param["key"]
+
         val = st.text_input(
-            label=param["label"],
-            value=param.get("default", ""),
+            label=param.get("label", key),
+            value=st.session_state.get(f"_dialog_param_{key}", param.get("default", "")),
             placeholder=param.get("placeholder", ""),
-            key=f"_dialog_param_{param['key']}",
+            key=f"_dialog_param_{key}",
         )
-        param_values[param["key"]] = val
+
+        param_values[key] = val
 
     st.markdown("---")
     col_ok, col_cancel = st.columns(2)
 
+    # ── APPLY BUTTON ────────────────────────
     with col_ok:
         if st.button("✅ Apply to Query Box", use_container_width=True, type="primary"):
-            missing = [
-                p["label"] for p in tmpl.get("params", [])
-                if not param_values.get(p["key"], "").strip()
-                and not p.get("default", "").strip()
-            ]
+
+            # ✅ CLEAN VALUES (fix spaces + None)
+            clean_values = {
+                k: (v.strip() if isinstance(v, str) else "")
+                for k, v in param_values.items()
+            }
+
+            # ✅ VALIDATION (ONLY required fields)
+            missing = []
+            for p in tmpl.get("params", []):
+                key = p["key"]
+                if p.get("required", False) and not clean_values.get(key, ""):
+                    missing.append(p.get("label", key))
+
             if missing:
                 st.warning(f"⚠️ Please fill in: {', '.join(missing)}")
-            else:
-                formatted = tmpl["query"]
-                for key, val in param_values.items():
-                    formatted = formatted.replace(f"{{{key}}}", val)
+                return
 
-                st.session_state["prefill_query"] = formatted
-                st.session_state["_dialog_open"] = False
-                st.session_state.pop("_dialog_template", None)
-                st.rerun()
+            # ✅ INFO: no filters applied
+            non_limit_keys = [k for k in clean_values if k != "LIMIT"]
+            if not any(clean_values[k] for k in non_limit_keys):
+                st.info("ℹ️ No filters applied — showing ALL results")
 
+            # ✅ FORMAT QUERY
+            formatted = tmpl["query"]
+            for key, val in clean_values.items():
+                formatted = formatted.replace(f"{{{key}}}", val)
+
+            # ✅ Inject query
+            st.session_state["prefill_query"] = formatted
+
+            # 🔥 CLEAR OLD INPUT STATE (CRITICAL FIX)
+            for k in list(st.session_state.keys()):
+                if k.startswith("_dialog_param_"):
+                    del st.session_state[k]
+
+            # Close dialog
+            st.session_state["_dialog_open"] = False
+            st.session_state.pop("_dialog_template", None)
+
+            st.rerun()
+
+    # ── CANCEL BUTTON ───────────────────────
     with col_cancel:
         if st.button("❌ Cancel", use_container_width=True):
+            for k in list(st.session_state.keys()):
+                if k.startswith("_dialog_param_"):
+                    del st.session_state[k]
+
             st.session_state["_dialog_open"] = False
             st.session_state.pop("_dialog_template", None)
             st.rerun()
-
-
 # ── Cypher detection ──────────────────────────────────────────────────────────
 
 def is_cypher(q: str) -> bool:

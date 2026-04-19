@@ -90,4 +90,64 @@ TEMPLATES = [
             {"key": "LIMIT",       "label": "Result Limit", "placeholder": "15", "default": "15"},
         ],
     },
+
+    {
+        "name": "___ KILLED ___ RESIDES_IN ___",
+        "description": "Who killed whom and where did the victim live? e.g. Mohammad Ashraf KILLED Mamta Bisht who RESIDES_IN Haldwani",
+        "query": (
+            "MATCH (killer)-[:KILLED]->(victim)-[:RESIDES_IN|LOCATED_IN|OCCURRED_IN]->(loc)\n"
+            "WHERE killer.id IS NOT NULL AND victim.id IS NOT NULL\n"
+            "RETURN killer.id AS killer, victim.id AS victim, loc.id AS location\n"
+            "LIMIT {LIMIT}"
+        ),
+        "params": [
+            {"key": "LIMIT", "label": "Result Limit", "placeholder": "15", "default": "15"},
+        ],
+    },
+
+    {
+        "name": "___ USED ___ RECOVERED BY ___",
+        "description": "Who used what weapon, later recovered by whom? e.g. Mohammad Ashraf USED Hammer, RECOVERED BY Nainital Police",
+        "query": (
+            "MATCH (accused)-[:USED|USED_IN]->(weapon)<-[:RECOVERED|SEIZED]-(police)\n"
+            "WHERE accused.id IS NOT NULL AND weapon.id IS NOT NULL\n"
+            "RETURN accused.id AS accused, weapon.id AS weapon,\n"
+            "       labels(weapon)[0] AS weapon_type, police.id AS recovered_by\n"
+            "LIMIT {LIMIT}"
+        ),
+        "params": [
+            {"key": "LIMIT", "label": "Result Limit", "placeholder": "15", "default": "15"},
+        ],
+    },
+
+    {
+        "name": "___ ARRESTED ___ CONFESSED_TO ___",
+        "description": "Who arrested whom, and what did the accused confess to? e.g. Nainital Police ARRESTED Mohammad Ashraf who CONFESSED_TO killing Mamta Bisht",
+        "query": (
+            "MATCH (police)-[:ARRESTED]->(accused)-[:CONFESSED_TO]->(crime)\n"
+            "WHERE accused.id IS NOT NULL\n"
+            "RETURN police.id AS police_org, accused.id AS accused,\n"
+            "       crime.id AS confessed_crime\n"
+            "LIMIT {LIMIT}"
+        ),
+        "params": [
+            {"key": "LIMIT", "label": "Result Limit", "placeholder": "15", "default": "15"},
+        ],
+    },
+
+    {
+        "name": "___ KILLED ___ FLED_TO ___",
+        "description": "Who killed whom and then fled where? e.g. Mohammad Ashraf KILLED Mamta Bisht then FLED_TO Kichha",
+        "query": (
+            "MATCH (p)-[:KILLED|COMMITTED|COMMITTED_OFFENSE_AGAINST]->(victim)\n"
+            "WITH p, victim\n"
+            "MATCH (p)-[:FLED_TO]->(loc)\n"
+            "WHERE p.id IS NOT NULL\n"
+            "RETURN p.id AS accused, victim.id AS victim, loc.id AS fled_to\n"
+            "LIMIT {LIMIT}"
+        ),
+        "params": [
+            {"key": "LIMIT", "label": "Result Limit", "placeholder": "10", "default": "10"},
+        ],
+    },
 ]

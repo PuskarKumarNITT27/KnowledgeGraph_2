@@ -74,4 +74,55 @@ TEMPLATES = [
             {"key": "LIMIT",        "label": "Result Limit", "placeholder": "10",           "default": "10"},
         ],
     },
+
+    {
+        "name": "Person who KILLED someone AND was ARRESTED",
+        "description": "Find accused persons who both killed a victim and were subsequently arrested.",
+        "query": (
+            "MATCH (accused)-[:KILLED]->(victim)\n"
+            "WITH accused, collect(victim.id)[0] AS killed_person\n"
+            "MATCH (org)-[:ARRESTED]->(accused)\n"
+            "WHERE accused.id IS NOT NULL\n"
+            "RETURN accused.id AS accused, killed_person AS victim,\n"
+            "       org.id AS arrested_by\n"
+            "LIMIT {LIMIT}"
+        ),
+        "params": [
+            {"key": "LIMIT", "label": "Result Limit", "placeholder": "15", "default": "15"},
+        ],
+    },
+
+    {
+        "name": "Person worked at victim's place AND committed crime there",
+        "description": "Find accused who previously worked at the crime location (prior access motive).",
+        "query": (
+            "MATCH (accused)-[:WORKS_AT|WORKS_FOR|WORKED_AT]->(place)\n"
+            "WITH accused, place\n"
+            "MATCH (accused)-[:KILLED|COMMITTED|ATTACKED|COMMITTED_OFFENSE_AGAINST]->(victim)\n"
+            "WHERE accused.id IS NOT NULL AND place.id IS NOT NULL\n"
+            "RETURN accused.id AS accused, place.id AS prior_workplace,\n"
+            "       victim.id AS crime_victim\n"
+            "LIMIT {LIMIT}"
+        ),
+        "params": [
+            {"key": "LIMIT", "label": "Result Limit", "placeholder": "10", "default": "10"},
+        ],
+    },
+
+    {
+        "name": "Accused with weapon recovered AND confession",
+        "description": "Find accused from whom evidence was recovered AND who also confessed.",
+        "query": (
+            "MATCH (org)-[:RECOVERED|SEIZED]->(item)\n"
+            "WITH org, collect(item.id) AS recovered_items\n"
+            "MATCH (org)-[:ARRESTED]->(accused)-[:CONFESSED_TO]->(crime)\n"
+            "WHERE accused.id IS NOT NULL\n"
+            "RETURN accused.id AS accused, crime.id AS confession,\n"
+            "       recovered_items[0..3] AS evidence_recovered\n"
+            "LIMIT {LIMIT}"
+        ),
+        "params": [
+            {"key": "LIMIT", "label": "Result Limit", "placeholder": "10", "default": "10"},
+        ],
+    },
 ]

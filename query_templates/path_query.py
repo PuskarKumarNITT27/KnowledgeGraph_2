@@ -59,4 +59,39 @@ TEMPLATES = [
             {"key": "LIMIT",       "label": "Result Limit","placeholder": "50",          "default": "50"},
         ],
     },
+
+    {
+        "name": "___ → ___ shortest crime trail",
+        "description": "Shortest path between accused and police. e.g. Mohammad Ashraf → Nainital Police",
+        "query": (
+            "MATCH (accused), (police)\n"
+            "WHERE toLower(coalesce(accused.id,'')) CONTAINS toLower('{ACCUSED_NAME}')\n"
+            "  AND toLower(coalesce(police.id,''))  CONTAINS toLower('{POLICE_NAME}')\n"
+            "  AND accused <> police\n"
+            "MATCH path = shortestPath((accused)-[*..{MAX_DEPTH}]-(police))\n"
+            "RETURN path"
+        ),
+        "params": [
+            {"key": "ACCUSED_NAME", "label": "Accused Name",  "placeholder": "Mohammad Ashraf", "default": ""},
+            {"key": "POLICE_NAME",  "label": "Police / Org",  "placeholder": "Nainital",        "default": ""},
+            {"key": "MAX_DEPTH",    "label": "Max Hops",      "placeholder": "6",               "default": "6"},
+        ],
+    },
+
+    {
+        "name": "___ KILLED ___ LOCATED_IN ___",
+        "description": "Accused killed victim who lived at a location. e.g. Mohammad Ashraf KILLED Mamta Bisht LOCATED_IN Haldwani",
+        "query": (
+            "MATCH (accused)\n"
+            "WHERE toLower(coalesce(accused.id,'')) CONTAINS toLower('{ACCUSED_NAME}')\n"
+            "MATCH path = (accused)-[:KILLED|COMMITTED|ATTACKED|MURDERED]->(victim)"
+            "-[:RESIDES_IN|LOCATED_IN]->(loc)\n"
+            "RETURN path\n"
+            "LIMIT {LIMIT}"
+        ),
+        "params": [
+            {"key": "ACCUSED_NAME", "label": "Accused Name", "placeholder": "Mohammad Ashraf", "default": ""},
+            {"key": "LIMIT",        "label": "Result Limit", "placeholder": "10",              "default": "10"},
+        ],
+    },
 ]

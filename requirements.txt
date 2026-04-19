@@ -15,7 +15,7 @@ neo4j>=5.19.0
 # ── Utilities ─────────────────────────────────────────────────────────────────
 python-dotenv>=1.0.0     # optional — loads .env for local development
 pyvis
-google-genai>=1.0.0
+google-generativeai
 
  
 # ── CSV scraping ──────────────────────────────────────────────────────────────

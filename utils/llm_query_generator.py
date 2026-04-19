@@ -31,7 +31,7 @@ def load_schema_from_cache() -> str:
             else:
                 formatted.append(f"- {name}")
 
-        # ✅ RELATIONSHIPS (only types, ignore __Entity__ noise)
+        # ✅ RELATIONSHIPS
         formatted.append("\nRELATIONSHIP TYPES:")
         for rel in schema.get("relationships", []):
             rel_type = rel.get("type", "")
@@ -76,10 +76,66 @@ USER QUESTION:
 
     text = response.text.strip()
 
-    # ✅ Cleanup
     if "```" in text:
         text = text.split("```")[1]
         if text.startswith("cypher"):
             text = text[len("cypher"):]
 
     return text.strip()
+
+
+
+def _question_evaluator(question: str, generated_query: str) -> dict:
+    """
+    Fake evaluator function.
+    Does NOT actually evaluate correctness.
+    Just simulates evaluation pipeline.
+    """
+
+    print("🔍 Running dummy evaluator...")
+
+    # fake scoring logic
+    score = 0
+
+    if "MATCH" in generated_query:
+        score += 1
+
+    if "RETURN" in generated_query:
+        score += 1
+
+    if len(question) > 5:
+        score += 1
+
+    # fake verdict
+    if score >= 2:
+        verdict = "PASS"
+    else:
+        verdict = "FAIL"
+
+    # fake explanation
+    explanation = "This is a dummy evaluation. No real validation performed."
+
+    # fake metadata
+    result = {
+        "question": question,
+        "query": generated_query,
+        "score": score,
+        "verdict": verdict,
+        "confidence": round(score / 3, 2),
+        "note": explanation
+    }
+
+    return result
+
+
+# ==========================================
+# 🚀 Example Usage
+# ==========================================
+if __name__ == "__main__":
+    q = "Who used hammer?"
+    
+    cypher_query = generate_cypher_from_nl(q)
+    print("Generated Query:\n", cypher_query)
+
+    evaluation = _question_evaluator(q, cypher_query)
+    print("\nEvaluation Result:\n", evaluation)
